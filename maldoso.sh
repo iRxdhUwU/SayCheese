@@ -277,10 +277,6 @@ read -p "$(echo -e ${GRAY}'[+] Subdomínio (default: '${default_subdomain}'):'${
 subdomain="${subdomain:-$default_subdomain}"
 fi
 
-info "Iniciando servidor online"
-spinner
-capture "Sessão ${GREEN}ESTABELECIDA${RESET}"
-sleep 1
 server
 payload
 checkfound
