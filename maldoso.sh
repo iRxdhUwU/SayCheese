@@ -236,27 +236,35 @@ checkfound
 }
 
 start1() {
-rm -f sendlink
-separator
+  rm -f sendlink
+  separator
   printf "${GREEN}[01]${RESET} ${GRAY}Servidor Local (demo)${RESET}\n"
   printf "${GREEN}[02]${RESET} ${GRAY}Servidor Online (demo)${RESET}\n"
   printf "${GREEN}[00]${RESET} ${GRAY}Sair${RESET}\n"
   separator
-  read -p "$(printf "${PURPLE}➜ Escolha uma opção: ${RESET}")" opt
-  option_server="${option_server:-1}"
 
-if [[ $option_server -eq 1 ]]; then
-start
-elif [[ $option_server -eq 2 ]]; then
-ngrok_server
-else
-0) exit 0 ;;
-    *) warn "Opção inválida"; sleep 1; menu ;;
+  read -p "$(printf "${PURPLE}➜ Escolha uma opção: ${RESET}")" option_server
+
+  case "$option_server" in
+    1|"01")
+      start
+      ;;
+    2|"02")
+      ngrok_server
+      ;;
+    0|"00")
+      warn "Encerrando framework"
+      sleep 0.6
+      clear
+      exit 0
+      ;;
+    *)
+      warn "Opção inválida"
+      sleep 1
+      clear
+      start1
+      ;;
   esac
-sleep 1
-clear
-start1
-fi
 }
 
 start() {
