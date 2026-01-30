@@ -156,7 +156,7 @@ while true; do
   if [[ -e "ip.txt" && $ip_captured == false ]]; then
     success "IP registrado no sistema"
     catch_ip
-  ip_captured=true
+  ip_captured=false
 fi
 
   sleep 0.5
