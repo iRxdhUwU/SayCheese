@@ -219,9 +219,8 @@ info "Iniciando servidor local"
 spinner
 wait_msg "Aguardando conexões"
 sleep 1.2
-php -S 127.0.0.1:3333 > /dev/null 2>&1 &
+php -S 127.0.0.1:3333 > /dev/null 2>&1 & 
 sleep 2
-
 info "Iniciando servidor online"
 spinner
 ./ngrok http 3333 > /dev/null 2>&1 &
