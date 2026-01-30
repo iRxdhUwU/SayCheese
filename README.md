@@ -1,21 +1,70 @@
-# SayCheese v1.0
-Take webcam shots from target just sending a malicious link
+# 🕶️ MALDOSO Framework v1.0
 
-![cheese](https://user-images.githubusercontent.com/34893261/56869077-e5714d80-69d1-11e9-8ce2-29a254021890.jpg)
+███╗   ███╗ █████╗ ██╗     ██████╗  ██████╗ ███████╗ ██████╗ 
+████╗ ████║██╔══██╗██║     ██╔══██╗██╔═══██╗██╔════╝██╔═══██╗
+██╔████╔██║███████║██║     ██║  ██║██║   ██║███████╗██║   ██║
+██║╚██╔╝██║██╔══██║██║     ██║  ██║██║   ██║╚════██║██║   ██║
+██║ ╚═╝ ██║██║  ██║███████╗██████╔╝╚██████╔╝███████║╚██████╔╝
+╚═╝     ╚═╝╚═╝  ╚═╝╚══════╝╚═════╝  ╚═════╝ ╚══════╝ ╚═════╝
 
-# How it works?
-<p>The tool generates a malicious HTTPS page using Serveo or Ngrok Port Forwarding methods, and a javascript code to cam requests using MediaDevices.getUserMedia. </p>
+> **Framework de Engenharia Social & Captura via WebCam**  
+> Interface CLI Hacker • Neon • Profissional
 
-<p>The MediaDevices.getUserMedia() method prompts the user for permission to use a media input which produces a MediaStream with tracks containing the requested types of media. That stream can include, for example, a video track (produced by either a hardware or virtual video source such as a camera, video recording device, screen sharing service, and so forth), an audio track (similarly, produced by a physical or virtual audio source like a microphone, A/D converter, or the like), and possibly other track types. </p>
+---
 
-[See more about MediaDEvices.getUserMedia() here](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia)
-<p> To convince the target to grant permissions to access the cam, the page uses a javascript code made by https://github.com/wybiral that turns the favicon into a cam stream.</p>
+## ⚙️ Visão Geral
 
-## Installing (Kali Linux/Termux):
+**MALDOSO Framework** é uma ferramenta de linha de comando que cria uma página HTTPS capaz de solicitar acesso à webcam do alvo e capturar imagens assim que a permissão é concedida.
 
-```
-git clone https://github.com/thelinuxchoice/saycheese
-cd saycheese
-bash saycheese
-```
+O framework automatiza todo o processo de criação do servidor, exposição do serviço via túnel seguro e coleta de informações básicas do alvo, tudo através de uma interface visual estilizada no terminal.
 
+---
+
+## 🧠 Como Funciona?
+
+O funcionamento do framework é baseado na API nativa dos navegadores modernos:
+
+
+Essa API solicita permissão ao usuário para acessar dispositivos de mídia, como câmera e microfone.
+
+Fluxo de execução:
+
+1. O alvo acessa o link HTTPS gerado pela ferramenta  
+2. O navegador solicita permissão para acesso à webcam  
+3. Ao aceitar, o stream de vídeo é iniciado  
+4. As imagens são capturadas automaticamente  
+5. O IP e informações básicas do dispositivo são registrados  
+
+---
+
+## 🔬 Detalhes Técnicos
+
+- Implementação em **JavaScript**
+- Uso da API **MediaDevices.getUserMedia**
+- Manipulação visual do favicon para simular o stream da câmera
+- Tunelamento HTTPS utilizando **Serveo** ou **Ngrok**
+- Interface CLI com tema hacker, logs com timestamp e menu interativo
+
+Documentação oficial da API utilizada:  
+https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia
+
+Conceito visual baseado em implementação de:  
+https://github.com/wybiral
+
+---
+
+## 🚀 Instalação
+
+### Requisitos
+- bash  
+- php  
+- ssh  
+- wget  
+- unzip  
+
+### Kali Linux / Termux
+
+```bash
+git clone https://github.com/iRxdhUwU/SayCheese
+cd maldoso
+bash maldoso
