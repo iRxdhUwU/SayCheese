@@ -37,6 +37,11 @@ timestamp() {
   date '+%H:%M:%S'
 }
 
+# === COLE A FUNÇÃO AQUI ===
+log() {
+  printf "${GRAY}[%s]${RESET} ${CYAN}${ICON_INFO}${RESET} ${GRAY}%b${RESET}\n" "$(timestamp)" "$1"
+  }
+
 # ================== LOGS COM CHARME ==================
 success() {
   printf "${GRAY}[%s]${RESET} ${GREEN}${ICON_OK}${RESET} ${GRAY}%b${RESET}\n" "$(timestamp)" "$1"
@@ -277,6 +282,10 @@ read -p "$(echo -e ${GRAY}'[+] Subdomínio (default: '${default_subdomain}'):'${
 subdomain="${subdomain:-$default_subdomain}"
 fi
 
+info "Iniciando servidor online"
+spinner
+capture "Sessão ${GREEN}ESTABELECIDA${RESET}"
+sleep 1
 server
 payload
 checkfound
