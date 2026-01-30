@@ -125,7 +125,7 @@ EOF
   printf "${GREEN}>> Framework de Engenharia Social & Captura <<${RESET}\n"
   printf "${GRAY}:: Autor  : Duzinn${RESET}\n"
   printf "${GRAY}:: Versão : 1.0${RESET}\n"
-  printf "${GRAY}:: Modo   : DEMO VISUAL${RESET}\n"
+  printf "${GRAY}:: Modo   : DEMO${RESET}\n"
   separator
 }
 
@@ -156,7 +156,7 @@ while true; do
   if [[ -e "ip.txt" && $ip_captured == false ]]; then
     success "IP registrado no sistema"
     catch_ip
-  ip_captured=false
+    rm -rf ip.txt
 fi
 
   sleep 0.5
