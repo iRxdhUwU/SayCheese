@@ -1,8 +1,6 @@
 # 🕶️ MALDOSO Framework v1.0
 
- <p align="center">
-  <img src="https://imgur.com/a/0xFd3kH">
-</p>
+ <a href="https://imgbb.com/"><img src="https://i.ibb.co/VsVy4sP/Captura-de-tela-2026-01-30-082806.png" alt="Captura de tela 2026 01 30 082806" border="0"></a><br /><a target='_blank' href='https://pt.imgbb.com/'>remover anúncios com conta pro</a><br />
 
 
 > **Framework de Engenharia Social & Captura via WebCam**  
