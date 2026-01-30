@@ -61,6 +61,6 @@ https://github.com/wybiral
 ### Kali Linux / Termux
 
 ```bash
-git clone https://github.com/iRxdhUwU/SayCheese
+git clone https://github.com/iRxdhUwU/Maldoso
 cd maldoso
 bash maldoso
